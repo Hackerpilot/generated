@@ -1,0 +1,10 @@
+{
+	"name": "generated",
+	"targetType": "executable",
+	"description": "A D code generator useful for testing D parsers",
+	"copyright": "Copyright © 2014, Brian Schott",
+	"authors": ["Brian Schott"],
+	"license": "BSL-1.0",
+	"dependencies": {
+	}
+}
