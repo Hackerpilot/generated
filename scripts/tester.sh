@@ -1,6 +1,9 @@
 TESTCOMMAND="dscanner -s"
-
-for i in $(seq 10000); do
+TOTALRUNS=1000
+printf "           "
+for i in $(seq $TOTALRUNS); do
+	printf "\b\b\b\b\b\b\b\b\b\b\b"
+	printf "%5d/%5d" $i $TOTALRUNS
 	FILE="file_$i.d"
 	./generated > $FILE
 	if [ $? -eq 0 ]; then
@@ -12,3 +15,4 @@ for i in $(seq 10000); do
 	fi
 	rm -f $FILE
 done
+printf "\n"
