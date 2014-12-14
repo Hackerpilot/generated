@@ -106,7 +106,7 @@ void generateInheritable(File f)
 
 uint generateSeparated(alias functionName)(uint atLeast, uint atMost, string separator, File f)
 {
-	uint n = uniform(atLeast, atMost + 1);
+	uint n = times(atLeast, atMost);
 	foreach (i; 0 .. n)
 	{
 		functionName(f);
@@ -134,7 +134,7 @@ void generateIdentifier(File f)
 
 void generateStringLiteral(File f)
 {
-	f.write("\"stringLiteral\"");
+	f.write("\"", IDENTIFIERS[uniform(0, IDENTIFIERS.length)], "\"");
 }
 
 void generateCharacterLiteral(File f)
@@ -368,31 +368,22 @@ void generateAsmOrExp(File f)
 
 void generateAsmPrimaryExp(File f)
 {
-	switch (uniform(0, 5))
-	{
-	case 0:
-		generateIntLiteral(f);
-		break;
-	case 1:
-		generateFloatLiteral(f);
-		break;
-	case 2:
-		generateRegister(f);
-		if (dice(3, 1))
-		{
-			f.write(" : ");
-			generateAsmExp(f);
-		}
-		break;
-	case 3:
-		generateIdentifierChain(f);
-		break;
-	case 4:
-		f.write("$");
-		break;
-	default:
-		assert (false, __FUNCTION__);
-	}
+	arbitraryCall(f, [
+		Choice(10, &generateIntLiteral),
+		Choice(10, &generateFloatLiteral),
+		Choice(10, &generateIdentifierChain),
+		Choice(1 , function (File f) {
+			f.write("$");
+		}),
+		Choice(1 , function (File f) {
+			generateRegister(f);
+			if (dice(3, 1))
+			{
+				f.write(" : ");
+				generateAsmExp(f);
+			}
+		})
+	]);
 }
 
 void generateAsmRelExp(File f)
@@ -415,7 +406,7 @@ void generateAsmStatement(File f)
 	}
 	f.writeln();
 	f.writeln("{");
-	foreach (_; 0 .. uniform(0, 10))
+	foreach (_; 0 .. times(0, 8))
 	{
 		generateAsmInstruction(f);
 		f.writeln(";");
@@ -835,7 +826,7 @@ void generateDeclaration(File f)
 		Choice(1, &generateDebugSpecification),
 		Choice(1, &generateDestructor),
 		Choice(1, &generateEponymousTemplateDeclaration),
-		Choice(1, &generateFunctionDeclaration),
+		Choice(4, &generateFunctionDeclaration),
 		Choice(1, &generateInvariant),
 		Choice(1, &generateMixinDeclaration),
 		Choice(1, &generateMixinTemplateDeclaration),
@@ -968,7 +959,10 @@ void generateEnumDeclaration(File f)
 void generateEnumMember(File f)
 {
 	if (coinFlip())
+	{
 		generateIdentifier(f);
+		f.write(" ");
+	}
 	else
 	{
 		if (coinFlip())
@@ -1198,24 +1192,27 @@ void generateFunctionLiteralExpression(File f)
 		generateParameters(f);
 		generateSeparated!(generateFunctionAttribute)(0, 3, " ", f);
 	}
+	f.writeln();
 	generateFunctionBody(f);
 }
 
 void generateGotoStatement(File f)
 {
 	f.write("goto");
-	switch (uniform(0, 4))
-	{
-	case 0: break;
-	case 1: f.write(" "); generateIdentifier(f); break;
-	case 2: f.write(" default"); break;
-	case 3:
-		f.write(" case");
-		if (coinFlip())
-			generateExpression(f);
-		break;
-	default: assert (false, __FUNCTION__);
-	}
+	arbitraryCall(f, [
+		Choice(10, function (File f) {
+			f.write(" ");
+			generateIdentifier(f);
+		}),
+		Choice(10, function (File f) {
+			f.write(" default");
+		}),
+		Choice(1, function (File f) {
+			f.write(" case");
+			if (coinFlip())
+				generateExpression(f);
+		})
+	]);
 	f.writeln(";");
 }
 
@@ -1236,10 +1233,10 @@ void generateIdentifierOrTemplateChain(File f)
 
 void generateIdentifierOrTemplateInstance(File f)
 {
-	if (coinFlip())
-		generateIdentifier(f);
-	else
-		generateTemplateInstance(f);
+	arbitraryCall(f, [
+		Choice(8, &generateIdentifier),
+		Choice(2, &generateTemplateInstance)
+	]);
 }
 
 void generateIdentityExpression(File f)
@@ -1255,15 +1252,22 @@ void generateIdentityExpression(File f)
 void generateIfStatement(File f)
 {
 	f.write("if (");
-	{
-		switch (uniform(0, 3))
-		{
-		case 0: f.write("auto "); generateIdentifier(f); f.write(" = "); generateExpression(f); break;
-		case 1: generateType(f); f.write(" "); generateIdentifier(f); f.write(" = "); generateExpression(f); break;
-		case 2: generateExpression(f); break;
-		default: assert (false, __FUNCTION__);
-		}
-	}
+	arbitraryCall(f, [
+		Choice(1, function (File f) {
+			f.write("auto ");
+			generateIdentifier(f);
+			f.write(" = ");
+			generateExpression(f);
+		}),
+		Choice(1, function (File f) {
+			generateType(f);
+			f.write(" ");
+			generateIdentifier(f);
+			f.write(" = ");
+			generateExpression(f);
+		}),
+		Choice(2, &generateExpression)
+	]);
 	f.writeln(")");
 	generateDeclarationOrStatement(f);
 }
@@ -1366,15 +1370,29 @@ void generateIsExpression(File f)
 	generateType(f);
 	if (coinFlip())
 		generateIdentifier(f);
-	switch (uniform(0, 5))
-	{
-	case 0: break;
-	case 1: f.write(" : "); generateTypeSpecialization(f); break;
-	case 2: f.write(" = "); generateTypeSpecialization(f); break;
-	case 3: f.write(" : "); generateTypeSpecialization(f); f.write(", "); generateTemplateParameterList(f); break;
-	case 4: f.write(" = "); generateTypeSpecialization(f); f.write(", "); generateTemplateParameterList(f); break;
-	default: assert (false, __FUNCTION__);
-	}
+	arbitraryCall(f, [
+		Choice(1, function (File f) {
+			f.write(" : ");
+			generateTypeSpecialization(f);
+		}),
+		Choice(1, function (File f) {
+			f.write(" = ");
+			generateTypeSpecialization(f);
+		}),
+		Choice(1, function (File f) {
+			f.write(" : ");
+			generateTypeSpecialization(f);
+			f.write(", ");
+			generateTemplateParameterList(f);
+		}),
+		Choice(1, function (File f) {
+			f.write(" = ");
+			generateTypeSpecialization(f);
+			f.write(", ");
+			generateTemplateParameterList(f);
+		}),
+		Choice(10, function (File f) {})
+	]);
 	f.write(")");
 }
 
@@ -1401,26 +1419,23 @@ void generateLabeledStatement(File f)
 
 void generateLambdaExpression(File f)
 {
-	switch (uniform(0, 3))
-	{
-	case 0:
-		generateIdentifier(f);
-
-		break;
-	case 1:
-		if (coinFlip())
-			f.write("function ");
-		else
-			f.write("delegate ");
-		if (coinFlip())
-			generateType(f);
-		goto case;
-	case 2:
-		generateParameters(f);
-		generateSeparated!(generateFunctionAttribute)(0, 2, " ", f);
-		break;
-	default: assert (false, __FUNCTION__);
-	}
+	arbitraryCall(f, [
+		Choice(5, &generateIdentifier),
+		Choice(1, function (File f) {
+			if (coinFlip())
+				f.write("function ");
+			else
+				f.write("delegate ");
+			if (coinFlip())
+				generateType(f);
+			generateParameters(f);
+			generateSeparated!(generateFunctionAttribute)(0, 2, " ", f);
+		}),
+		Choice(1, function (File f) {
+			generateParameters(f);
+			generateSeparated!(generateFunctionAttribute)(0, 2, " ", f);
+		})
+	]);
 	f.write(" => ");
 	generateAssignExpression(f);
 }
@@ -1635,11 +1650,12 @@ void generateParameterAttribute(File f)
 void generateParameters(File f)
 {
 	f.write("(");
-	if (coinFlip)
+	auto n = generateSeparated!(generateParameter)(0, 6, ", ", f);
+	if (coinFlip())
 	{
-		generateSeparated!(generateParameter)(0, 6, ", ", f);
-		if (coinFlip())
-			f.write("...");
+		if (n > 0)
+			f.write(", ");
+		f.write("...");
 	}
 	f.write(")");
 }
@@ -1913,7 +1929,7 @@ void generateStorageClass(File f)
 void generateStructBody(File f)
 {
 	f.writeln("{");
-	foreach (_; 0 .. times(0, 5))
+	foreach (_; 0 .. times(0, 7))
 		generateDeclaration(f);
 	f.writeln("}");
 }
