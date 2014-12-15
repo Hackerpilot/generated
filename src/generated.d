@@ -33,7 +33,8 @@ immutable string[] IDENTIFIERS = [
 	"apple", "orange", "raspberry", "grape", "pineapple", "gosh", "omg",
 	"ouchMyFinger", "aaargh", "plastic", "cocaine", "migrane", "knife",
 	"acrylic", "phone", "remote", "tape", "drywall", "carton", "eggplant",
-	"emerge", "items", "slash"
+	"emerge", "items", "slash" , "freedom", "angelic", "boom", "nanny_ogg",
+	"discworld", "monday", "zelda", "portal", "dumbass"
 ];
 
 struct Choice
