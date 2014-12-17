@@ -967,7 +967,10 @@ void generateEnumMember(File f)
 	else
 	{
 		if (coinFlip())
+		{
 			generateType(f);
+			f.write(" ");
+		}
 		generateIdentifier(f);
 		f.write(" = ");
 		generateAssignExpression(f);
@@ -1902,7 +1905,7 @@ void generateStaticIfCondition(File f)
 
 void generateStorageClass(File f)
 {
-	switch (uniform(0, 19))
+	switch (uniform(0, 17))
 	{
 	case 0: generateAlignAttribute(f); break;
 	case 1: generateLinkageAttribute(f); break;
@@ -1914,15 +1917,14 @@ void generateStorageClass(File f)
 	case 7: f.write("enum"); break;
 	case 8: f.write("extern"); break;
 	case 9: f.write("final"); break;
-	case 10: f.write("virtual"); break;
-	case 11: f.write("nothrow"); break;
-	case 12: f.write("override"); break;
-	case 13: f.write("pure"); break;
-	case 14: f.write("ref"); break;
-	case 15: f.write("__gshared"); break;
-	case 16: f.write("scope"); break;
-	case 17: f.write("static"); break;
-	case 18: f.write("synchronized"); break;
+	case 10: f.write("nothrow"); break;
+	case 11: f.write("override"); break;
+	case 12: f.write("pure"); break;
+	case 13: f.write("ref"); break;
+	case 14: f.write("__gshared"); break;
+	case 15: f.write("scope"); break;
+	case 16: f.write("static"); break;
+	case 17: f.write("synchronized"); break;
 	default: assert (false, __FUNCTION__);
 	}
 }
