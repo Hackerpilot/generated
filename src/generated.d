@@ -498,8 +498,7 @@ void generateAtAttribute(File f)
 		Choice(1, function (File f) {
 			generateIdentifier(f);
 			f.write("(");
-			if (coinFlip())
-				generateArgumentList(f);
+			generateArgumentList(f);
 			f.write(")");
 		}),
 		Choice(20, &generateIdentifier)
@@ -508,32 +507,19 @@ void generateAtAttribute(File f)
 
 void generateAttribute(File f)
 {
-	switch (uniform(0, 7))
-	{
-	case 0:
-		generatePragmaExpression(f);
-		break;
-	case 1:
-		generateStorageClass(f);
-		break;
-	case 2:
-		f.write("export");
-		break;
-	case 3:
-		f.write("package");
-		break;
-	case 4:
-		f.write("private");
-		break;
-	case 5:
-		f.write("protected");
-		break;
-	case 6:
-		f.write("public");
-		break;
-	default:
-		assert (false, __FUNCTION__);
-	}
+	arbitraryCall(f, [
+		Choice(1, &generatePragmaExpression),
+		Choice(1, &generateDeprecated),
+		Choice(1, &generateLinkageAttribute),
+		Choice(1, &generateAlignAttribute),
+		Choice(1, &generateAtAttribute),
+		Choice(10, function (File f) {
+			f.write(["export", "package", "private", "protected", "public",
+				"static", "extern", "abstract", "final", "override",
+				"synchronized", "auto", "scope", "const", "immutable",
+				"inout", "__gshared", "nothrow", "pure", "ref"].randomSample(1).front);
+		})
+	]);
 }
 void generateAttributeDeclaration(File f)
 {
@@ -597,7 +583,7 @@ void generateBuiltinType(File f)
 		"short", "ushort", "long", "ulong", "char", "wchar", "dchar", "bool",
 		"void", "cent", "ucent", "real", "ireal", "byte", "ubyte", "cdouble",
 		"cfloat", "creal"];
-	f.write(randomSample(builtinTypes, 1).front);
+	f.write(builtinTypes[uniform(0, builtinTypes.length)]);
 }
 
 void generateCaseRangeStatement(File f)
@@ -968,6 +954,7 @@ void generateEnumMember(File f)
 	{
 		if (coinFlip())
 			generateType(f);
+		f.write(" ");
 		generateIdentifier(f);
 		f.write(" = ");
 		generateAssignExpression(f);
@@ -976,18 +963,11 @@ void generateEnumMember(File f)
 
 void generateEponymousTemplateDeclaration(File f)
 {
-	if (coinFlip())
-		f.write("enum ");
-	else
-		f.write("alias ");
+	f.write("enum ");
 	generateIdentifier(f);
-	f.write(" ");
 	generateTemplateParameters(f);
 	f.write(" = ");
-	if (coinFlip())
-		generateAssignExpression(f);
-	else
-		generateType(f);
+	generateAssignExpression(f);
 	f.writeln(";");
 }
 
@@ -1143,17 +1123,19 @@ void generateFunctionCallExpression(File f)
 
 void generateFunctionDeclaration(File f)
 {
-	if (coinFlip())
-		generateType(f);
-	else
+	bool isAuto = coinFlip();
+	if (isAuto)
 		generateStorageClass(f);
+	else
+		generateType(f);
 	f.write(" ");
 	generateIdentifier(f);
 	if (coinFlip())
 	{
 		generateTemplateParameters(f);
 		generateParameters(f);
-		generateSeparated!(generateMemberFunctionAttribute)(0, 2, " ", f);
+		if (generateSeparated!(generateMemberFunctionAttribute)(0, 2, " ", f))
+			f.write(" ");
 		if (coinFlip())
 		{
 			generateConstraint(f);
@@ -1165,12 +1147,11 @@ void generateFunctionDeclaration(File f)
 		generateParameters(f);
 		generateSeparated!(generateMemberFunctionAttribute)(0, 2, " ", f);
 	}
-	if (coinFlip())
+	if (isAuto || coinFlip())
 	{
 		 f.writeln();
 		 generateFunctionBody(f);
 	}
-	else
 		f.writeln(";");
 }
 
@@ -1561,7 +1542,6 @@ void generateNewAnonClassExpression(File f)
 	}
 	if (coinFlip())
 	{
-		f.write(": ");
 		generateBaseClassList(f);
 		f.write(" ");
 	}
@@ -1902,7 +1882,7 @@ void generateStaticIfCondition(File f)
 
 void generateStorageClass(File f)
 {
-	switch (uniform(0, 19))
+	switch (uniform(0, 18))
 	{
 	case 0: generateAlignAttribute(f); break;
 	case 1: generateLinkageAttribute(f); break;
@@ -1914,15 +1894,14 @@ void generateStorageClass(File f)
 	case 7: f.write("enum"); break;
 	case 8: f.write("extern"); break;
 	case 9: f.write("final"); break;
-	case 10: f.write("virtual"); break;
-	case 11: f.write("nothrow"); break;
-	case 12: f.write("override"); break;
-	case 13: f.write("pure"); break;
-	case 14: f.write("ref"); break;
-	case 15: f.write("__gshared"); break;
-	case 16: f.write("scope"); break;
-	case 17: f.write("static"); break;
-	case 18: f.write("synchronized"); break;
+	case 10: f.write("nothrow"); break;
+	case 11: f.write("override"); break;
+	case 12: f.write("pure"); break;
+	case 13: f.write("ref"); break;
+	case 14: f.write("__gshared"); break;
+	case 15: f.write("scope"); break;
+	case 16: f.write("static"); break;
+	case 17: f.write("synchronized"); break;
 	default: assert (false, __FUNCTION__);
 	}
 }
@@ -1940,7 +1919,7 @@ void generateStructDeclaration(File f)
 	f.write("struct ");
 	switch (uniform(0, 4))
 	{
-	case 0: f.writeln(";"); break;
+	case 0: generateIdentifier(f); f.writeln(";"); break;
 	case 1: f.writeln(); generateStructBody(f); break;
 	case 2:
 		generateIdentifier(f);
