@@ -738,8 +738,10 @@ void generateConstraint(File f)
 void generateConstructor(File f)
 {
 	f.write("this");
+	bool isTemplated;
 	if (coinFlip())
 	{
+		isTemplated = true;
 		generateTemplateParameters(f);
 		generateParameters(f);
 		if (generateSeparated!(generateMemberFunctionAttribute)(0, 3, " ", f))
@@ -753,7 +755,7 @@ void generateConstructor(File f)
 		if (generateSeparated!(generateMemberFunctionAttribute)(0, 3, " ", f))
 			f.write(" ");
 	}
-	if (coinFlip())
+	if (isTemplated || coinFlip())
 	{
 		f.writeln();
 		generateFunctionBody(f);
@@ -1125,6 +1127,7 @@ void generateFunctionCallExpression(File f)
 
 void generateFunctionDeclaration(File f)
 {
+	bool isTemplate;
 	bool isAuto = coinFlip();
 	if (isAuto)
 		generateStorageClass(f);
@@ -1134,6 +1137,7 @@ void generateFunctionDeclaration(File f)
 	generateIdentifier(f);
 	if (coinFlip())
 	{
+		isTemplate = true;
 		generateTemplateParameters(f);
 		generateParameters(f);
 		if (generateSeparated!(generateMemberFunctionAttribute)(0, 2, " ", f))
@@ -1149,12 +1153,13 @@ void generateFunctionDeclaration(File f)
 		generateParameters(f);
 		generateSeparated!(generateMemberFunctionAttribute)(0, 2, " ", f);
 	}
-	if (isAuto || coinFlip())
+	if (isAuto || isTemplate || coinFlip())
 	{
 		 f.writeln();
 		 generateFunctionBody(f);
 	}
-	f.writeln(";");
+	else
+		f.writeln(";");
 }
 
 void generateFunctionLiteralExpression(File f)
@@ -1360,7 +1365,7 @@ void generateIsExpression(File f)
 			generateTypeSpecialization(f);
 		}),
 		Choice(1, function (File f) {
-			f.write(" = ");
+			f.write(" == ");
 			generateTypeSpecialization(f);
 		}),
 		Choice(1, function (File f) {
