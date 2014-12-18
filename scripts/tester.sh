@@ -1,6 +1,9 @@
 TESTCOMMAND="dscanner -s"
 TOTALRUNS=1000
-printf "           "
+
+rm -rf rejects
+
+printf "Progress:            "
 for i in $(seq $TOTALRUNS); do
 	printf "\b\b\b\b\b\b\b\b\b\b\b"
 	printf "%5d/%5d" $i $TOTALRUNS
@@ -15,4 +18,5 @@ for i in $(seq $TOTALRUNS); do
 	fi
 	rm -f $FILE
 done
-printf "\n"
+printf "\nDone\n"
+echo $(ls rejects/ | wc -l) "/ $TOTALRUNS files failed"
