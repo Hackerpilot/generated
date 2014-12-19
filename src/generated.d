@@ -2007,10 +2007,9 @@ void generateTemplateAliasParameter(File f)
 		f.write(" ");
 	}
 	generateIdentifier(f);
-	f.write(" ");
 	if (coinFlip())
 	{
-		f.write(": ");
+		f.write(" : ");
 		if (coinFlip())
 			generateType(f);
 		else
@@ -2018,7 +2017,7 @@ void generateTemplateAliasParameter(File f)
 	}
 	if (coinFlip())
 	{
-		f.write("= ");
+		f.write(" = ");
 		if (coinFlip())
 			generateType(f);
 		else
