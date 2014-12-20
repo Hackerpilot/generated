@@ -801,11 +801,8 @@ void generateDebugSpecification(File f)
 
 void generateDeclaration(File f)
 {
-	if (dice(5, 1))
-	{
-		generateSeparated!(generateAttribute)(1, 4, " ", f);
+	if (generateSeparated!(generateAttribute)(0, 4, " ", f))
 		f.write(" ");
-	}
 	arbitraryCall(f, [
 		Choice(1, &generateAliasDeclaration),
 		Choice(1, &generateAliasThisDeclaration),
@@ -2449,7 +2446,7 @@ void generateVariableDeclaration(File f)
 		Choice(1, function (File f) {
 			generateType(f);
 			f.write(" ");
-			generateDeclarator(f);
+			generateIdentifier(f);
 			f.write(" = ");
 			generateFunctionBody(f);
 			f.writeln(";");
