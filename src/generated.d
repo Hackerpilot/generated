@@ -433,7 +433,7 @@ void generateAsmUnaExp(File f)
 		generateAsmExp(f);
 		break;
 	case 1:
-		generateIdentifier(f);
+		f.write(["offsetof", "seg"].randomSample(1).front);
 		f.write(" ");
 		generateAsmExp(f);
 		break;
@@ -1111,14 +1111,11 @@ void generateFunctionBody(File f)
 
 void generateFunctionCallExpression(File f)
 {
-	if (coinFlip())
-	{
-		generateUnaryExpression(f);
-		if (coinFlip())
-			generateTemplateArguments(f);
-	}
-	else
-		generateType(f);
+	arbitraryCall(f, [
+		Choice(1, &generateSymbol),
+		Choice(3, &generateUnaryExpression),
+		Choice(1, &generateType),
+	]);
 	generateArguments(f);
 }
 
@@ -1372,7 +1369,7 @@ void generateIsExpression(File f)
 			generateTemplateParameterList(f);
 		}),
 		Choice(1, function (File f) {
-			f.write(" = ");
+			f.write(" == ");
 			generateTypeSpecialization(f);
 			f.write(", ");
 			generateTemplateParameterList(f);
